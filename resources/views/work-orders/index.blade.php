@@ -28,10 +28,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($workOrders as $order)
+                    @forelse($workOrders as $order)
                         <tr>
                             <td>{{ $order->id }}</td>
-                            <td>{{ $order->type->name }}</td>
+                            <td>{{ \App\Constants\WorkOrderTypes::TYPES[$order->type] ?? $order->type }}</td>
                             <td>{{ $order->employee->name }}</td>
                             <td>{{ $order->safebox->karat }}K</td>
                             <td>{{ number_format($order->start_amount, 2) }}g</td>
@@ -41,20 +41,32 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('work-orders.show', $order) }}" class="btn btn-sm btn-info">
-                                    View
-                                </a>
-                                @if($order->status === 'pending')
-                                    <a href="{{ route('work-orders.edit', $order) }}" class="btn btn-sm btn-warning">
-                                        Edit
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('work-orders.show', $order) }}" class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
                                     </a>
-                                @endif
+                                    @if($order->status === 'pending')
+                                        <a href="{{ route('work-orders.edit', $order) }}" class="btn btn-sm btn-warning">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center">No work orders found</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
+        
+        @if($workOrders->hasPages())
+            <div class="mt-3 d-flex justify-content-center">
+                {{ $workOrders->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
     </div>
 </div>
 @endsection

@@ -1,42 +1,57 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\WorkOrder;
-use App\Models\WorkOrderType;
 use App\Models\Employee;
 use App\Models\Safebox;
 use App\Models\WorkOrderChange;
+use App\Constants\WorkOrderTypes;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class WorkOrderController extends Controller
 {
     public function index()
-    {
-        $workOrders = WorkOrder::with(['employee', 'safebox', 'type'])->latest()->get();
-        return view('work-orders.index', compact('workOrders'));
-    }
+{
+    $workOrders = WorkOrder::with(['employee', 'safebox'])
+        ->latest()
+        ->paginate(10); // Changed from get() to paginate()
+    
+    return view('work-orders.index', compact('workOrders'));
+}
 
     public function create()
     {
-        $types = WorkOrderType::all();
         $employees = Employee::all();
         $safeboxes = Safebox::all();
         
-        return view('work-orders.create', compact('types', 'employees', 'safeboxes'));
+        return view('work-orders.create', [
+            'employees' => $employees,
+            'safeboxes' => $safeboxes,
+            'types' => WorkOrderTypes::TYPES
+        ]);
     }
 
     public function store(Request $request)
     {
+        $validTypes = array_keys(WorkOrderTypes::TYPES);
+        
         $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'safebox_id' => 'required|exists:safeboxes,id',
-            'type_id' => 'required|exists:work_order_types,id',
-            'start_amount' => 'required|numeric|min:0',
+            'type' => ['required', Rule::in($validTypes)],
+            'start_amount' => 'required|numeric|min:0.01',
             'start_date' => 'required|date',
         ]);
         
-        $workOrder = WorkOrder::create($request->all());
+        $workOrder = WorkOrder::create([
+            'employee_id' => $request->employee_id,
+            'safebox_id' => $request->safebox_id,
+            'type' => $request->type,
+            'start_amount' => $request->start_amount,
+            'start_date' => $request->start_date,
+            'status' => 'pending'
+        ]);
         
         // Record initial change
         WorkOrderChange::create([
@@ -52,7 +67,7 @@ class WorkOrderController extends Controller
 
     public function show(WorkOrder $workOrder)
     {
-        $workOrder->load(['employee', 'safebox', 'type', 'changes.safebox']);
+        $workOrder->load(['employee', 'safebox', 'changes.safebox']);
         return view('work-orders.show', compact('workOrder'));
     }
 
@@ -62,11 +77,12 @@ class WorkOrderController extends Controller
             return redirect()->back()->with('error', 'Completed work orders cannot be edited.');
         }
         
-        $types = WorkOrderType::all();
-        $employees = Employee::all();
-        $safeboxes = Safebox::all();
-        
-        return view('work-orders.edit', compact('workOrder', 'types', 'employees', 'safeboxes'));
+        return view('work-orders.edit', [
+            'workOrder' => $workOrder,
+            'employees' => Employee::all(),
+            'safeboxes' => Safebox::all(),
+            'types' => WorkOrderTypes::TYPES
+        ]);
     }
 
     public function update(Request $request, WorkOrder $workOrder)
@@ -75,11 +91,13 @@ class WorkOrderController extends Controller
             return redirect()->back()->with('error', 'Completed work orders cannot be edited.');
         }
         
+        $validTypes = array_keys(WorkOrderTypes::TYPES);
+        
         $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'safebox_id' => 'required|exists:safeboxes,id',
-            'type_id' => 'required|exists:work_order_types,id',
-            'start_amount' => 'required|numeric|min:0',
+            'type' => ['required', Rule::in($validTypes)],
+            'start_amount' => 'required|numeric|min:0.01',
             'finish_amount' => 'nullable|numeric|min:0',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -96,6 +114,9 @@ class WorkOrderController extends Controller
         if ($workOrder->finish_amount != $request->finish_amount) {
             $changes[] = 'Finish amount changed from ' . ($workOrder->finish_amount ?? 'null') . ' to ' . ($request->finish_amount ?? 'null');
         }
+        if ($workOrder->type != $request->type) {
+            $changes[] = 'Type changed from ' . $workOrder->type . ' to ' . $request->type;
+        }
         
         if (!empty($changes)) {
             WorkOrderChange::create([
@@ -106,7 +127,15 @@ class WorkOrderController extends Controller
             ]);
         }
         
-        $workOrder->update($request->all());
+        $workOrder->update([
+            'employee_id' => $request->employee_id,
+            'safebox_id' => $request->safebox_id,
+            'type' => $request->type,
+            'start_amount' => $request->start_amount,
+            'finish_amount' => $request->finish_amount,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+        ]);
         
         return redirect()->route('work-orders.show', $workOrder)
             ->with('success', 'Work order updated successfully.');
@@ -126,7 +155,7 @@ class WorkOrderController extends Controller
         $loss = $workOrder->start_amount - $workOrder->finish_amount;
         
         // For melting, divide loss by 2
-        if ($workOrder->type->slug === 'melting') {
+        if ($workOrder->type === 'melting') {
             $loss = $loss / 2;
         }
         
@@ -140,13 +169,21 @@ class WorkOrderController extends Controller
             ->with('success', 'Work order marked as completed.');
     }
 
-    public function byType(WorkOrderType $type)
-    {
-        $workOrders = WorkOrder::where('type_id', $type->id)
-            ->with(['employee', 'safebox'])
-            ->latest()
-            ->get();
-            
-        return view('work-orders.by-type', compact('workOrders', 'type'));
+   public function byType($type)
+{
+    if (!array_key_exists($type, WorkOrderTypes::TYPES)) {
+        abort(404);
     }
+    
+    $workOrders = WorkOrder::where('type', $type)
+        ->with(['employee', 'safebox'])
+        ->latest()
+        ->paginate(10);
+        
+    return view('work-orders.by-type', [
+        'workOrders' => $workOrders,
+        'type' => $type,
+        'typeName' => WorkOrderTypes::TYPES[$type] // Add the display name
+    ]);
+}
 }

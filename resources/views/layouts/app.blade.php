@@ -27,22 +27,22 @@
                         <a class="nav-link" href="{{ route('safebox.index') }}">Safebox</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="workOrdersDropdown" role="button" data-bs-toggle="dropdown">
-                            Work Orders
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('work-orders.index') }}">All Orders</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('work-orders.by-type', ['type' => 'shining']) }}">Shining</a></li>
-                            <li><a class="dropdown-item" href="{{ route('work-orders.by-type', ['type' => 'lasercut']) }}">Laser Cut</a></li>
-                            <li><a class="dropdown-item" href="{{ route('work-orders.by-type', ['type' => 'pulling']) }}">Pulling & Dismantle</a></li>
-                            <li><a class="dropdown-item" href="{{ route('work-orders.by-type', ['type' => 'assembly']) }}">Assembly</a></li>
-                            <li><a class="dropdown-item" href="{{ route('work-orders.by-type', ['type' => 'casting']) }}">Casting</a></li>
-                            <li><a class="dropdown-item" href="{{ route('work-orders.by-type', ['type' => 'wielding']) }}">Laser Wielding</a></li>
-                            <li><a class="dropdown-item" href="{{ route('work-orders.by-type', ['type' => 'melting']) }}">Melting</a></li>
-                            <li><a class="dropdown-item" href="{{ route('work-orders.by-type', ['type' => 'carving']) }}">Carving</a></li>
-                        </ul>
-                    </li>
+    <a class="nav-link dropdown-toggle" href="#" id="workOrdersDropdown" role="button" data-bs-toggle="dropdown">
+        Work Orders
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ route('work-orders.index') }}">All Orders</a></li>
+        <li><hr class="dropdown-divider"></li>
+        @foreach(App\Constants\WorkOrderTypes::TYPES as $slug => $name)
+            <li>
+                <a class="dropdown-item {{ request()->is('work-orders/type/'.$slug) ? 'active' : '' }}" 
+                   href="{{ route('work-orders.by-type', ['type' => $slug]) }}">
+                    {{ $name }}
+                </a>
+            </li>
+        @endforeach
+    </ul>
+</li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">

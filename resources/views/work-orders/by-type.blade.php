@@ -3,11 +3,11 @@
 @section('content')
 <div class="row mb-4">
     <div class="col-md-6">
-        <h2>{{ ucfirst($type->name) }} Work Orders</h2>
+        <h2>{{ \App\Constants\WorkOrderTypes::TYPES[$type] ?? ucfirst($type) }} Work Orders</h2>
     </div>
     <div class="col-md-6 text-end">
-        <a href="{{ route('work-orders.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> Create Work Order
+        <a href="{{ route('work-orders.create', ['type' => $type]) }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Create {{ \App\Constants\WorkOrderTypes::TYPES[$type] ?? ucfirst($type) }} Order
         </a>
         <a href="{{ route('work-orders.index') }}" class="btn btn-secondary">
             All Work Orders
@@ -31,15 +31,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($workOrders as $order)
+                    @forelse($workOrders as $order)
                         <tr>
                             <td>{{ $order->id }}</td>
                             <td>{{ $order->employee->name }}</td>
-                            <td>{{ $order->safebox->karat }}K</td>
+                            <td>{{ $order->safebox->karat }}K ({{ number_format($order->safebox->balance, 2) }}g)</td>
                             <td>{{ number_format($order->start_amount, 2) }}g</td>
                             <td>
                                 @if($order->finish_amount)
                                     {{ number_format($order->finish_amount, 2) }}g
+                                    @if($order->loss)
+                                        <br><small class="text-danger">Loss: {{ number_format($order->loss, 2) }}g</small>
+                                    @endif
                                 @else
                                     -
                                 @endif
@@ -50,20 +53,39 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('work-orders.show', $order) }}" class="btn btn-sm btn-info">
-                                    View
-                                </a>
-                                @if($order->status === 'pending')
-                                    <a href="{{ route('work-orders.edit', $order) }}" class="btn btn-sm btn-warning">
-                                        Edit
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('work-orders.show', $order) }}" class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
                                     </a>
-                                @endif
+                                    @if($order->status === 'pending')
+                                        <a href="{{ route('work-orders.edit', $order) }}" class="btn btn-sm btn-warning">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('work-orders.complete', $order) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success" 
+                                                    onclick="return confirm('Mark this order as completed?')">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center">No work orders found</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
+        
+        @if($workOrders->hasPages())
+            <div class="mt-3">
+                {{ $workOrders->links() }}
+            </div>
+        @endif
     </div>
 </div>
 @endsection

@@ -15,7 +15,7 @@ public function up()
         $table->id();
         $table->foreignId('employee_id')->constrained();
         $table->foreignId('safebox_id')->constrained();
-        $table->foreignId('type_id')->constrained('work_order_types');
+        $table->string('type');
         $table->decimal('start_amount', 10, 2);
         $table->decimal('finish_amount', 10, 2)->nullable();
         $table->date('start_date');

@@ -4,7 +4,7 @@
 <div class="row mb-4">
     <div class="col-md-6">
         <h2>Work Order #{{ $workOrder->id }}</h2>
-        <h5 class="text-muted">{{ $workOrder->type->name }}</h5>
+        <h5 class="text-muted">{{ \App\Constants\WorkOrderTypes::TYPES[$workOrder->type] ?? $workOrder->type }}</h5>
     </div>
     <div class="col-md-6 text-end">
         @if($workOrder->status === 'pending')
@@ -48,12 +48,24 @@
                     </tr>
                     <tr>
                         <th>Start Date</th>
-                        <td>{{ $workOrder->start_date->format('Y-m-d') }}</td>
+                        <td>
+                            @if($workOrder->start_date instanceof \Carbon\Carbon)
+                                {{ $workOrder->start_date->format('Y-m-d') }}
+                            @else
+                                {{ $workOrder->start_date }} {{-- Fallback display --}}
+                            @endif
+                        </td>
                     </tr>
                     @if($workOrder->end_date)
                         <tr>
                             <th>End Date</th>
-                            <td>{{ $workOrder->end_date->format('Y-m-d') }}</td>
+                            <td>
+                                @if($workOrder->end_date instanceof \Carbon\Carbon)
+                                    {{ $workOrder->end_date->format('Y-m-d') }}
+                                @else
+                                    {{ $workOrder->end_date }} {{-- Fallback display --}}
+                                @endif
+                            </td>
                         </tr>
                     @endif
                 </table>
@@ -73,7 +85,7 @@
                             <th>Loss</th>
                             <td>
                                 {{ number_format($workOrder->loss, 2) }}g
-                                @if($workOrder->type->slug === 'melting')
+                                @if($workOrder->type === 'melting')
                                     <span class="text-muted">(50% of actual loss)</span>
                                 @endif
                             </td>
@@ -97,7 +109,13 @@
                 <tbody>
                     @foreach($workOrder->changes as $change)
                         <tr>
-                            <td>{{ $change->created_at->format('Y-m-d H:i') }}</td>
+                            <td>
+                                @if($change->created_at instanceof \Carbon\Carbon)
+                                    {{ $change->created_at->format('Y-m-d H:i') }}
+                                @else
+                                    {{ $change->created_at }} {{-- Fallback display --}}
+                                @endif
+                            </td>
                             <td>{{ $change->safebox->karat }}K</td>
                             <td>{{ number_format($change->weight, 2) }}</td>
                             <td>{{ $change->note }}</td>
