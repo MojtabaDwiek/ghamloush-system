@@ -70,7 +70,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="finish_amount" class="form-label">Finish Amount (g) - Optional</label>
+                        <label for="finish_amount" class="form-label">Finish Amount (g)</label>
                         <input type="number" step="0.01" min="0" class="form-control" id="finish_amount" 
                                name="finish_amount" value="{{ old('finish_amount', $workOrder->finish_amount ?? '') }}">
                     </div>
@@ -78,13 +78,13 @@
                     <div class="mb-3">
                         <label for="start_date" class="form-label">Start Date</label>
                         <input type="date" class="form-control" id="start_date" name="start_date" 
-                               value="{{ old('start_date', isset($workOrder) ? $workOrder->start_date->format('Y-m-d') : date('Y-m-d') }}" required>
+                               value="{{ old('start_date', isset($workOrder) ? $workOrder->start_date->format('Y-m-d') : date('Y-m-d')) }}" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="end_date" class="form-label">End Date - Optional</label>
+                        <label for="end_date" class="form-label">End Date</label>
                         <input type="date" class="form-control" id="end_date" name="end_date" 
-                               value="{{ old('end_date', isset($workOrder) && $workOrder->end_date ? $workOrder->end_date->format('Y-m-d') : '' }}">
+                               value="{{ old('end_date', isset($workOrder) && $workOrder->end_date ? $workOrder->end_date->format('Y-m-d') : '') }}">
                     </div>
                 </div>
             </div>
