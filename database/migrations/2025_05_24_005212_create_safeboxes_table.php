@@ -10,20 +10,24 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up()
-{
-    Schema::create('safeboxes', function (Blueprint $table) {
-        $table->id();
-        $table->enum('karat', ['18', '21', '24']);
-        $table->decimal('balance', 10, 2)->default(0);
-        $table->string('description')->nullable();
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('safeboxes', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique(); // Added name field with unique constraint
+            $table->enum('karat', ['18', '21', '24']);
+            $table->decimal('balance', 10, 2)->default(0);
+            $table->string('description')->nullable();
+            $table->timestamps();
+            
+            // Optional: Add index for better performance on frequently queried fields
+            $table->index('karat');
+        });
+    }
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('safeboxes');
     }

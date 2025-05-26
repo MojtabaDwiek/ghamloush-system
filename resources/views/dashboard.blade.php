@@ -48,10 +48,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(App\Models\WorkOrder::with(['type', 'employee'])->latest()->take(5)->get() as $order)
+                            @foreach($recentWorkOrders as $order)
                                 <tr>
                                     <td><a href="{{ route('work-orders.show', $order) }}">{{ $order->id }}</a></td>
-                                    <td>{{ $order->type->name }}</td>
+                                    <td>{{ $order->type_name }}</td>
                                     <td>{{ $order->employee->name }}</td>
                                     <td>
                                         <span class="badge bg-{{ $order->status === 'completed' ? 'success' : 'warning' }}">
@@ -82,12 +82,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(App\Models\Safebox::all() as $safebox)
+                            @foreach($safeboxBalances as $safebox)
                                 <tr>
                                     <td>{{ $safebox->karat }}K</td>
                                     <td>{{ number_format($safebox->balance, 2) }}</td>
                                     <td>
-                                        <a href="{{ route('safebox.show', $safebox) }}" class="btn btn-sm btn-primary">View</a>
+                                        <a href="{{ route('safebox.show', ['safebox' => $safebox->id]) }}" class="btn btn-sm btn-primary">View</a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -106,7 +106,7 @@
     const workOrdersChart = new Chart(workOrdersCtx, {
         type: 'pie',
         data: {
-            labels: @json($workOrders->pluck('type.name')),
+            labels: @json($workOrders->pluck('name')),
             datasets: [{
                 data: @json($workOrders->pluck('count')),
                 backgroundColor: [
@@ -130,7 +130,7 @@
     const safeboxChart = new Chart(safeboxCtx, {
         type: 'bar',
         data: {
-            labels: @json($safeboxBalances->pluck('karat')->map(fn($k) => $k . 'K')),
+            labels: @json($safeboxBalances->pluck('karat')->map(function($k) { return $k . 'K'; })),
             datasets: [{
                 label: 'Balance (g)',
                 data: @json($safeboxBalances->pluck('balance')),

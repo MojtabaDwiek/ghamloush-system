@@ -15,33 +15,54 @@
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
                     <tr>
-                        <th>ID</th>
+                        <th>Name</th>
                         <th>Karat</th>
                         <th>Balance (g)</th>
                         <th>Description</th>
-                        <th>Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($safeboxes as $safebox)
+                    @forelse($safeboxes as $safebox)
                         <tr>
-                            <td>{{ $safebox->id }}</td>
-                            <td>{{ $safebox->karat }}K</td>
-                            <td>{{ number_format($safebox->balance, 2) }}</td>
-                            <td>{{ $safebox->description ?? '-' }}</td>
                             <td>
-                                <a href="{{ route('safebox.show', $safebox) }}" class="btn btn-sm btn-info">
-                                    View
+                                <strong>{{ $safebox->name }}</strong>
+                                <div class="text-muted small">ID: {{ $safebox->id }}</div>
+                            </td>
+                            <td>{{ $safebox->karat }}K</td>
+                            <td class="{{ $safebox->balance < 0 ? 'text-danger' : '' }}">
+                                {{ number_format($safebox->balance, 2) }}
+                            </td>
+                            <td>
+                                <span class="d-inline-block text-truncate" style="max-width: 200px;">
+                                    {{ $safebox->description ?? '-' }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ route('safebox.show', $safebox) }}" 
+                                   class="btn btn-sm btn-info"
+                                   title="View details">
+                                    <i class="bi bi-eye"></i> View
                                 </a>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-4">No safeboxes found</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
+
+        @if($safeboxes->hasPages())
+        <div class="card-footer">
+            {{ $safeboxes->links() }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection

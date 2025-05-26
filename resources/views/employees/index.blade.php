@@ -31,9 +31,7 @@
                             <td>{{ $employee->name }}</td>
                             <td>{{ $employee->phone }}</td>
                             <td>
-                                <a href="{{ route('employees.show', $employee) }}" class="btn btn-sm btn-info">
-                                    View
-                                </a>
+                                
                                 <a href="{{ route('employees.edit', $employee) }}" class="btn btn-sm btn-warning">
                                     Edit
                                 </a>

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Safebox extends Model
 {
-    protected $fillable = ['karat', 'balance', 'description'];
+    protected $fillable = ['name','karat', 'balance', 'description'];
     
     public function workOrders()
     {

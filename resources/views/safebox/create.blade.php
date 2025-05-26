@@ -18,23 +18,42 @@
             @csrf
             
             <div class="mb-3">
-                <label for="karat" class="form-label">Karat</label>
-                <select class="form-select" id="karat" name="karat" required>
+                <label for="name" class="form-label">Safebox Name *</label>
+                <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                       id="name" name="name" value="{{ old('name') }}" required>
+                @error('name')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            
+            <div class="mb-3">
+                <label for="karat" class="form-label">Karat *</label>
+                <select class="form-select @error('karat') is-invalid @enderror" 
+                        id="karat" name="karat" required>
                     <option value="">Select Karat</option>
-                    <option value="18">18K</option>
-                    <option value="21">21K</option>
-                    <option value="24">24K</option>
+                    <option value="18" {{ old('karat') == '18' ? 'selected' : '' }}>18K</option>
+                    <option value="21" {{ old('karat') == '21' ? 'selected' : '' }}>21K</option>
+                    <option value="24" {{ old('karat') == '24' ? 'selected' : '' }}>24K</option>
                 </select>
+                @error('karat')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
             
             <div class="mb-3">
                 <label for="description" class="form-label">Description (Optional)</label>
-                <input type="text" class="form-control" id="description" name="description">
+                <textarea class="form-control @error('description') is-invalid @enderror" 
+                          id="description" name="description" rows="3">{{ old('description') }}</textarea>
+                @error('description')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
             
-            <button type="submit" class="btn btn-primary">
-                Save
-            </button>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Save Safebox
+                </button>
+            </div>
         </form>
     </div>
 </div>
